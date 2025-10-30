@@ -6,7 +6,6 @@ import { TokenClient } from './token_client';
 
 export class AuthClient {
   static async login(credentials: LoginRequest): Promise<{ access_token: string }> {
-    console.log("AuthClient login called");
     const response = await apiClient.post<{ access_token: string }>(
       `${API_ENDPOINTS.AUTH}/login`,
       credentials,
@@ -15,7 +14,6 @@ export class AuthClient {
         headers: addWithoutTokenHeader(),
       }
     );
-    console.log("Login response:", response);
     TokenClient.saveToken(response.data.access_token);
     return response.data;
   }
@@ -38,7 +36,9 @@ export class AuthClient {
       withCredentials: true,
       headers: { 'x-refresh-token': true },
     });
-    const { accessToken } = response.data;
-    TokenClient.saveToken(accessToken);
+    const { access_token } = response.data;
+    console.log("Refreshed access token:", access_token);
+    TokenClient.saveToken(access_token);
+    console.log("Access token updated in TokenClient.");
   }
 }

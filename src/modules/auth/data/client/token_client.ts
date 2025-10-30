@@ -22,7 +22,6 @@ export class TokenClient {
     try {
       const decodedToken = jwtDecode(token);
       const currentTime = Date.now() / 1000;
-      
       return decodedToken.exp ? decodedToken.exp > currentTime : false;
     } catch {
       return false;

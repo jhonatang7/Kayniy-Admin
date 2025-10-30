@@ -25,7 +25,6 @@ apiClient.interceptors.request.use(
     }
 
     const tokenIsValid = TokenClient.validateToken();
-
     if (tokenIsValid) {
       addToken(config);
     } else {
