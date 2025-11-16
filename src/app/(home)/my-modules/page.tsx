@@ -1,8 +1,13 @@
+import { RouteBreadCrumb } from "@/@core/view/components/layout/breadcrumb/breadcrumb";
+import ModuleList from "@/modules/module/view/components/module_list";
+import { Breadcrumb, BreadcrumbItem, Label, TextInput } from "flowbite-react";
+import { FaSearch } from "react-icons/fa";
+import { HiHome } from "react-icons/hi";
 export default function MyModulesPage() {
   return (
-    <div className="p-8">
-      <h1 className="text-4xl font-bold mb-4">My modules</h1>
-      <p className="text-gray-600">Bienvenido a la plataforma administrativa</p>
+    <div className="h-full">
+      <RouteBreadCrumb />
+      <ModuleList />
     </div>
   );
 }
