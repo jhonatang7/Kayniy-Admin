@@ -19,7 +19,7 @@ const _withoutTokenHeader = 'x-without-token';
 export const addWithoutTokenHeader = () => ({ [_withoutTokenHeader]: true });
 
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     if (config.headers[_withoutTokenHeader] || config.headers[_refreshTokenHeader]) {
       return config;
     }
@@ -28,7 +28,8 @@ apiClient.interceptors.request.use(
     if (tokenIsValid) {
       addToken(config);
     } else {
-      updateAccessToken(config);
+      await updateAccessToken();
+      addToken(config);
     }
 
     return config;
@@ -62,11 +63,8 @@ const addToken = (config: AxiosRequestConfig) => {
   return config;
 };
 
-const updateAccessToken = (config: AxiosRequestConfig) => {
-  console.log("Refreshing access token...");
-  AuthClient.refreshToken().then(() => {
-    addToken(config);
-  });
+const updateAccessToken = async () => {
+  await AuthClient.refreshToken();
 };
 
 export default apiClient;

@@ -37,8 +37,6 @@ export class AuthClient {
       headers: { 'x-refresh-token': true },
     });
     const { access_token } = response.data;
-    console.log("Refreshed access token:", access_token);
     TokenClient.saveToken(access_token);
-    console.log("Access token updated in TokenClient.");
   }
 }
