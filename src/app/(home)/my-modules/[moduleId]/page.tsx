@@ -7,6 +7,9 @@ import React, { use } from "react";
 import DeleteModule from "@/modules/module/view/components/delete_module";
 import { Breadcrumb, Button } from "flowbite-react";
 import { RouteBreadCrumb } from "@/@core/view/components/layout/breadcrumb/breadcrumb";
+import AssessmentPage from "@/modules/lesson/view/components/lesson_list";
+import LessonList from "@/modules/lesson/view/components/lesson_list";
+import { useRouter } from "next/navigation";
 
 export default function ModulePage({
   params,
@@ -15,6 +18,7 @@ export default function ModulePage({
 }) {
   const resolvedParams = use(params);
   const moduleId = resolvedParams.moduleId;
+  const router = useRouter();
   const { data: module, isLoading } = ModuleService.useModule(moduleId);
 
   if (isLoading) {
@@ -41,15 +45,15 @@ export default function ModulePage({
         {/* Lista de Lecciones - Lado Derecho */}
         <div className="w-full lg:w-2/5 flex flex-col mt-8 lg:mt-0">
           <div className="w-full">
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center lg:text-left">
-              Lecciones
-            </h2>
-
             {module.lessons && module.lessons.length > 0 && (
               <div className="mt-6 mb-2 flex flex-col space-y-4">
-                <Button className="w-full">Prueba de módulo</Button>
+                <Button onClick={() => {router.push(`/my-modules/${moduleId}/quiz`)}} className="w-full">Prueba de módulo</Button>
                 <div className="flex">
-                  <Button color="blue" className="w-full max-w-xs">
+                  <Button
+                    onClick={() => router.push(`/my-modules/${moduleId}/new-lesson`)}
+                    color="blue"
+                    className="w-full max-w-xs"
+                  >
                     Agregar Nueva Lección
                   </Button>
 
@@ -63,27 +67,20 @@ export default function ModulePage({
             <div className="p-6 md:p-8 rounded-lg shadow-lg">
               {/* Aquí irá la lista de lecciones */}
               {module.lessons && module.lessons.length > 0 ? (
-                <div className="space-y-4">
-                  {module.lessons.map((lesson, index) => (
-                    <div
-                      key={lesson.id}
-                      className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      <h3 className="font-semibold text-lg">
-                        Lección {index + 1}: {lesson.title}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-                        {lesson.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                <LessonList moduleId={moduleId} />
               ) : (
                 <div className="text-center py-12 flex flex-col items-center">
                   <p className="text-gray-500 dark:text-gray-400 mb-4">
                     Este módulo aún no tiene lecciones
                   </p>
-                  <Button color="blue">Crear Primera Lección</Button>
+                  <Button
+                    onClick={() => {
+                      router.push(`/my-modules/${moduleId}/new-lesson`);
+                    }}
+                    color="blue"
+                  >
+                    Crear Primera Lección
+                  </Button>
                 </div>
               )}
             </div>
