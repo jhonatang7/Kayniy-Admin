@@ -31,7 +31,7 @@ export class QuestionClient {
    * Actualizar una pregunta
    */
   static async updateQuestion(id: string, data: UpdateQuestionRequest): Promise<Question> {
-    const response = await apiClient.put<Question>(`${API_ENDPOINTS.QUESTION}/${id}`, data);
+    const response = await apiClient.patch<Question>(`${API_ENDPOINTS.QUESTION}/${id}`, data);
     return response.data;
   }
 

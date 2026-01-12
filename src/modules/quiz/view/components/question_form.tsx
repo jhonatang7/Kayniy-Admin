@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { questionSchema, QuestionFormValues } from "../schemas/question_schema";
 import {
@@ -23,18 +23,12 @@ import { QuestionService } from "../../data/services/question_service";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Question, QuestionType } from "../../main/types/question.types";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface QuestionFormProps {
   quizId: string;
   moduleId: string;
   question?: Question;
-}
-
-interface OptionInput {
-  id: string;
-  text: string;
-  isCorrect: boolean;
 }
 
 export default function QuestionForm({
@@ -52,39 +46,41 @@ export default function QuestionForm({
 
   const isPending = isCreating || isUpdating;
 
-  // Estado para el tipo de pregunta seleccionado
-  const [selectedType, setSelectedType] = useState<QuestionType>(
-    question?.type || QuestionType.UNIQUE_SELECTION
-  );
-
-  // Estado para las opciones
-  const [options, setOptions] = useState<OptionInput[]>(
-    question?.options.map((opt) => ({
-      id: opt.id,
-      text: opt.text,
-      isCorrect: opt.isCorrect,
-    })) || [
-      { id: "1", text: "", isCorrect: false },
-      { id: "2", text: "", isCorrect: false },
-    ]
-  );
-
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
-    reset,
+    control,
     setValue,
     watch,
+    trigger,
   } = useForm<QuestionFormValues>({
     resolver: zodResolver(questionSchema),
-    mode: "onChange",
+    mode: "all",
+    reValidateMode: "onChange",
     defaultValues: {
       title: question?.title || "",
       description: question?.description || "",
       type: question?.type || QuestionType.UNIQUE_SELECTION,
+      points: question?.points || 1,
+      options: question?.options.map((opt) => ({
+        id: opt.id,
+        content: opt.content,
+        isCorrect: opt.isCorrect,
+      })) || [
+        { id: crypto.randomUUID(), content: "", isCorrect: false },
+        { id: crypto.randomUUID(), content: "", isCorrect: false },
+      ],
     },
   });
+
+  const { fields, append, replace } = useFieldArray({
+    control,
+    name: "options",
+  });
+
+  const selectedType = watch("type");
+  const options = watch("options");
 
   // Actualizar valores cuando cambie la pregunta
   useEffect(() => {
@@ -92,76 +88,57 @@ export default function QuestionForm({
       setValue("title", question.title);
       setValue("description", question.description);
       setValue("type", question.type);
-      setSelectedType(question.type);
+      setValue("points", question.points);
+      setValue("options", question.options.map((opt) => ({
+        id: opt.id,
+        content: opt.content,
+        isCorrect: opt.isCorrect,
+      })));
     }
   }, [question, setValue]);
 
-  // Actualizar el tipo en el formulario cuando cambie
-  useEffect(() => {
-    setValue("type", selectedType);
-  }, [selectedType, setValue]);
-
   const addOption = () => {
-    setOptions([
-      ...options,
-      { id: Date.now().toString(), text: "", isCorrect: false },
-    ]);
+    append({ id: crypto.randomUUID(), content: "", isCorrect: false }, { 
+      shouldFocus: true 
+    });
   };
 
-  const removeOption = (id: string) => {
-    if (options.length <= 2) {
+  const removeOption = (index: number) => {
+    if (fields.length <= 2) {
       toast.error("Debe haber al menos 2 opciones");
       return;
     }
-    setOptions(options.filter((opt) => opt.id !== id));
+    // Usar replace para reemplazar todo el array y forzar detección de cambios
+    const newOptions = options.filter((_, idx) => idx !== index);
+    replace(newOptions);
+    // Forzar revalidación después de eliminar
+    //setTimeout(() => trigger(), 0);
   };
 
-  const updateOptionText = (id: string, text: string) => {
-    setOptions(
-      options.map((opt) => (opt.id === id ? { ...opt, text } : opt))
-    );
-  };
-
-  const toggleOptionCorrect = (id: string) => {
+  const toggleOptionCorrect = (index: number) => {
     if (selectedType === QuestionType.UNIQUE_SELECTION) {
       // Solo una opción puede ser correcta
-      setOptions(
-        options.map((opt) => ({
-          ...opt,
-          isCorrect: opt.id === id,
-        }))
-      );
+      fields.forEach((_, idx) => {
+        setValue(`options.${idx}.isCorrect`, idx === index, { shouldValidate: true });
+      });
     } else {
       // Múltiples opciones pueden ser correctas
-      setOptions(
-        options.map((opt) =>
-          opt.id === id ? { ...opt, isCorrect: !opt.isCorrect } : opt
-        )
-      );
+      const currentValue = options[index].isCorrect;
+      setValue(`options.${index}.isCorrect`, !currentValue, { shouldValidate: true });
     }
+    // Forzar revalidación del formulario completo
+    trigger();
   };
 
   const onSubmit = (data: QuestionFormValues) => {
-    // Validar opciones
-    const filledOptions = options.filter((opt) => opt.text.trim() !== "");
-    if (filledOptions.length < 2) {
-      toast.error("Debe haber al menos 2 opciones con texto");
-      return;
-    }
-
-    const hasCorrectOption = filledOptions.some((opt) => opt.isCorrect);
-    if (!hasCorrectOption) {
-      toast.error("Debe seleccionar al menos una respuesta correcta");
-      return;
-    }
-
     const questionData = {
       title: data.title,
       description: data.description,
       type: data.type,
       quizId,
-      options: filledOptions.map((opt) => ({
-        text: opt.text,
+      points: data.points,
+      options: data.options.map((opt) => ({
+        content: opt.content,
         isCorrect: opt.isCorrect,
       })),
     };
@@ -175,10 +152,16 @@ export default function QuestionForm({
             title: data.title,
             description: data.description,
             type: data.type,
-            options: filledOptions.map((opt) => ({
-              text: opt.text,
-              isCorrect: opt.isCorrect,
-            })),
+            points: data.points,
+            options: data.options.map((opt) => {
+              // Si el id empieza con un UUID generado por crypto.randomUUID(), es una opción nueva
+              const isNewOption = question.options.every(existingOpt => existingOpt.id !== opt.id);
+              return {
+                ...(isNewOption ? {} : { id: opt.id }), // Solo incluir id si es una opción existente
+                content: opt.content,
+                isCorrect: opt.isCorrect,
+              };
+            }),
           },
         },
         {
@@ -187,7 +170,14 @@ export default function QuestionForm({
             router.push(`/my-modules/${moduleId}/quiz`);
           },
           onError: (error: any) => {
-            toast.error("Error al actualizar la pregunta");
+            if (error?.response?.status === 422) {
+              toast.error(
+                "El total de puntos excede el l\u00edmite de 100. Por favor, reorganiza los puntos de tus preguntas antes de a\u00f1adir m\u00e1s.",
+                { duration: 5000 }
+              );
+            } else {
+              toast.error("Error al actualizar la pregunta");
+            }
             console.error(
               "Error al actualizar la pregunta:",
               error?.response?.data?.message || error.message
@@ -200,11 +190,17 @@ export default function QuestionForm({
       createQuestion(questionData, {
         onSuccess: () => {
           toast.success("Pregunta creada exitosamente");
-          reset();
           router.push(`/my-modules/${moduleId}/quiz`);
         },
         onError: (error: any) => {
-          toast.error("Error al crear la pregunta");
+          if (error?.response?.status === 422) {
+            toast.error(
+              "El total de puntos excede el l\u00edmite de 100. Por favor, reorganiza los puntos de tus preguntas antes de a\u00f1adir m\u00e1s.",
+              { duration: 5000 }
+            );
+          } else {
+            toast.error("Error al crear la pregunta");
+          }
           console.error(
             "Error al crear la pregunta:",
             error?.response?.data?.message || error.message
@@ -279,11 +275,8 @@ export default function QuestionForm({
                   <Select
                     id="type"
                     {...register("type")}
-                    value={selectedType}
-                    onChange={(e) =>
-                      setSelectedType(e.target.value as QuestionType)
-                    }
                     color={errors.type ? "failure" : "gray"}
+                    disabled={isEditing}
                   >
                     <option value={QuestionType.UNIQUE_SELECTION}>
                       Selección Única (una sola respuesta correcta)
@@ -297,6 +290,30 @@ export default function QuestionForm({
                       {errors.type.message}
                     </p>
                   )}
+                </div>
+
+                {/* Campo: Puntos */}
+                <div>
+                  <Label htmlFor="points" className="mb-2">
+                    Puntos de la Pregunta
+                  </Label>
+                  <TextInput
+                    id="points"
+                    {...register("points", { valueAsNumber: true })}
+                    type="number"
+                    min="1"
+                    max="100"
+                    placeholder="Ej: 10"
+                    color={errors.points ? "failure" : "gray"}
+                  />
+                  {errors.points && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.points.message}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    El total de puntos de todas las preguntas no debe exceder 100
+                  </p>
                 </div>
               </div>
             </Card>
@@ -333,23 +350,23 @@ export default function QuestionForm({
 
                 {/* Lista de opciones */}
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {options.map((option, index) => (
+                  {fields.map((field, index) => (
                     <div
-                      key={option.id}
+                      key={field.id}
                       className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
                     >
                       {/* Radio o Checkbox */}
                       <div className="flex items-center pt-2">
                         {selectedType === QuestionType.UNIQUE_SELECTION ? (
                           <Radio
-                            checked={option.isCorrect}
-                            onChange={() => toggleOptionCorrect(option.id)}
+                            checked={options[index]?.isCorrect || false}
+                            onChange={() => toggleOptionCorrect(index)}
                             name="correctOption"
                           />
                         ) : (
                           <Checkbox
-                            checked={option.isCorrect}
-                            onChange={() => toggleOptionCorrect(option.id)}
+                            checked={options[index]?.isCorrect || false}
+                            onChange={() => toggleOptionCorrect(index)}
                           />
                         )}
                       </div>
@@ -357,22 +374,25 @@ export default function QuestionForm({
                       {/* Input de texto */}
                       <div className="flex-1">
                         <TextInput
-                          value={option.text}
-                          onChange={(e) =>
-                            updateOptionText(option.id, e.target.value)
-                          }
+                          {...register(`options.${index}.content`)}
                           placeholder={`Opción ${index + 1}`}
                           sizing="sm"
+                          color={errors.options?.[index]?.content ? "failure" : "gray"}
                         />
+                        {errors.options?.[index]?.content && (
+                          <p className="mt-1 text-xs text-red-600">
+                            {errors.options[index]?.content?.message}
+                          </p>
+                        )}
                       </div>
 
                       {/* Botón eliminar */}
-                      {options.length > 2 && (
+                      {fields.length > 2 && (
                         <Button
                           type="button"
                           size="xs"
                           color="failure"
-                          onClick={() => removeOption(option.id)}
+                          onClick={() => removeOption(index)}
                         >
                           <HiTrash className="h-4 w-4" />
                         </Button>
@@ -380,6 +400,15 @@ export default function QuestionForm({
                     </div>
                   ))}
                 </div>
+
+                {/* Mostrar errores generales de opciones */}
+                {errors.options && typeof errors.options.message === 'string' && (
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      ⚠️ {errors.options.message}
+                    </p>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
@@ -388,8 +417,8 @@ export default function QuestionForm({
           <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button
               type="submit"
-              disabled={isPending}
-              color={!isPending ? "blue" : "gray"}
+              disabled={isPending || !isValid}
+              color={!isPending && isValid ? "blue" : "gray"}
               className="sm:flex-1"
             >
               <HiPencilAlt className="mr-2 h-5 w-5" />

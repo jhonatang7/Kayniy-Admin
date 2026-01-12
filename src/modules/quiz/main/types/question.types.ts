@@ -3,7 +3,9 @@ export interface Question {
     title: string;
     description: string;
     type: QuestionType;
+    order: number;
     quizId: string;
+    points: number;
     options: Option[];
     createdAt: string;
     updatedAt: string;
@@ -16,9 +18,8 @@ export enum QuestionType {
 
 export interface Option {
     id: string;
-    text: string;
+    content: string;
     isCorrect: boolean;
-    questionId: string;
 }
 
 export interface CreateQuestionRequest {
@@ -26,11 +27,18 @@ export interface CreateQuestionRequest {
     description: string;
     type: QuestionType;
     quizId: string;
+    points: number;
     options: CreateOptionRequest[];
 }
 
 export interface CreateOptionRequest {
-    text: string;
+    content: string;
+    isCorrect: boolean;
+}
+
+export interface UpdateOptionRequest {
+    id?: string;
+    content: string;
     isCorrect: boolean;
 }
 
@@ -38,5 +46,6 @@ export interface UpdateQuestionRequest {
     title?: string;
     description?: string;
     type?: QuestionType;
-    options?: CreateOptionRequest[];
+    points?: number;
+    options?: UpdateOptionRequest[];
 }

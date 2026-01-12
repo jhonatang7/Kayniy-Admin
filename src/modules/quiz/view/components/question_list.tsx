@@ -22,11 +22,17 @@ interface QuestionListProps {
 
 export default function QuestionList({ quizId, moduleId }: QuestionListProps) {
   const router = useRouter();
-  const { data: questions = [], isLoading } = QuestionService.useQuestionsByQuiz(quizId);
+  const { data: questions = [], isLoading } =
+    QuestionService.useQuestionsByQuiz(quizId);
   const { mutate: deleteQuestion } = QuestionService.useDeleteQuestion();
 
+  // Calcular el total de puntos
+  const totalPoints = questions.reduce((sum, question) => sum + (question.points || 0), 0);
+
   const handleAddQuestion = () => {
-    router.push(`/my-modules/${moduleId}/quiz/question/new-question?quizId=${quizId}`);
+    router.push(
+      `/my-modules/${moduleId}/quiz/question/new-question?quizId=${quizId}`
+    );
   };
 
   const handleEditQuestion = (questionId: string) => {
@@ -42,9 +48,16 @@ export default function QuestionList({ quizId, moduleId }: QuestionListProps) {
   return (
     <div className="relative overflow-x-auto">
       <div className="p-4 flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Preguntas del Cuestionario
-        </h3>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Preguntas del Cuestionario
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Total de puntos: <span className={`font-semibold ${totalPoints > 100 ? 'text-red-600' : totalPoints === 100 ? 'text-green-600' : 'text-blue-600'}`}>
+              {totalPoints}/100
+            </span>
+          </p>
+        </div>
         <Button color="blue" onClick={handleAddQuestion}>
           <HiPlus className="mr-2 h-5 w-5" />
           Añadir Pregunta
@@ -52,13 +65,19 @@ export default function QuestionList({ quizId, moduleId }: QuestionListProps) {
       </div>
 
       {isLoading ? (
-        <div className="p-4 text-center text-gray-500">Cargando preguntas...</div>
+        <div className="p-4 text-center text-gray-500">
+          Cargando preguntas...
+        </div>
       ) : questions.length === 0 ? (
         <div className="p-8 text-center justify-center items-center flex flex-col">
           <p className="text-gray-500 dark:text-gray-400 mb-4">
             No hay preguntas en este cuestionario
           </p>
-          <Button color="blue" className="max-w-sm w-full" onClick={handleAddQuestion}>
+          <Button
+            color="blue"
+            className="max-w-sm w-full"
+            onClick={handleAddQuestion}
+          >
             <HiPlus className="mr-2 h-5 w-5" />
             Crear Primera Pregunta
           </Button>
@@ -66,12 +85,14 @@ export default function QuestionList({ quizId, moduleId }: QuestionListProps) {
       ) : (
         <Table hoverable>
           <TableHead>
-            <TableHeadCell>Título</TableHeadCell>
-            <TableHeadCell>Tipo</TableHeadCell>
-            <TableHeadCell>Opciones</TableHeadCell>
-            <TableHeadCell>
-              <span className="sr-only">Acciones</span>
-            </TableHeadCell>
+            <tr>
+              <TableHeadCell className="w-16"></TableHeadCell>
+              <TableHeadCell>Título</TableHeadCell>
+              <TableHeadCell>Tipo</TableHeadCell>
+              <TableHeadCell>Opciones</TableHeadCell>
+              <TableHeadCell>Puntos</TableHeadCell>
+              <TableHeadCell>Acciones</TableHeadCell>
+            </tr>
           </TableHead>
           <TableBody className="divide-y">
             {questions.map((question) => (
@@ -79,6 +100,9 @@ export default function QuestionList({ quizId, moduleId }: QuestionListProps) {
                 key={question.id}
                 className="bg-white dark:border-gray-700 dark:bg-gray-800"
               >
+                <TableCell className="text-center font-semibold text-gray-700 dark:text-gray-300">
+                  {question.order}
+                </TableCell>
                 <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                   {question.title}
                 </TableCell>
@@ -86,17 +110,21 @@ export default function QuestionList({ quizId, moduleId }: QuestionListProps) {
                   <Badge
                     color={
                       question.type === QuestionType.UNIQUE_SELECTION
-                        ? "info"
-                        : "purple"
+                        ? "success"
+                        : "failure"
                     }
+                    className="rounded-full"
                   >
                     {question.type === QuestionType.UNIQUE_SELECTION
                       ? "Única"
                       : "Múltiple"}
                   </Badge>
                 </TableCell>
+                <TableCell>{question.options?.length || 0} opciones</TableCell>
                 <TableCell>
-                  {question.options?.length || 0} opciones
+                  <span className="font-semibold text-blue-600 dark:text-blue-400">
+                    {question.points || 0} pts
+                  </span>
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
@@ -109,7 +137,7 @@ export default function QuestionList({ quizId, moduleId }: QuestionListProps) {
                     </Button>
                     <Button
                       size="xs"
-                      color="failure"
+                      color="red"
                       onClick={() => handleDeleteQuestion(question.id)}
                     >
                       <HiTrash className="h-4 w-4" />

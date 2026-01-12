@@ -4,6 +4,7 @@ import { use } from "react";
 import QuestionForm from "@/modules/quiz/view/components/question_form";
 import Loading from "@/@core/view/components/Loading";
 import { QuestionService } from "@/modules/quiz/data/services/question_service";
+import { RouteBreadCrumb } from "@/@core/view/components/layout/breadcrumb/breadcrumb";
 
 export default function EditQuestionPage({
   params,
@@ -12,7 +13,7 @@ export default function EditQuestionPage({
 }) {
   const resolvedParams = use(params);
   const { moduleId, questionId } = resolvedParams;
-  
+
   const { data: question, isLoading } = QuestionService.useQuestion(questionId);
 
   if (isLoading) {
@@ -28,10 +29,13 @@ export default function EditQuestionPage({
   }
 
   return (
-    <QuestionForm
-      quizId={question.quizId}
-      moduleId={moduleId}
-      question={question}
-    />
+    <div className="flex flex-col w-full h-full">
+      <RouteBreadCrumb />
+      <QuestionForm
+        quizId={question.quizId}
+        moduleId={moduleId}
+        question={question}
+      />
+    </div>
   );
 }
