@@ -54,9 +54,14 @@ export function SidebarMenu() {
               <SidebarItem href="#" icon={TfiBlackboard}>
                 Cursos
               </SidebarItem>
-              <SidebarItem href="#" icon={TbUsersGroup}>
-                Clases en vivo
-              </SidebarItem>
+                <SidebarItem href="#" icon={TbUsersGroup}>
+                  Clases en vivo
+                </SidebarItem>
+            </SidebarItemGroup>
+            <SidebarItemGroup>
+              <SidebarItem href="/community" icon={TbUsersGroup}>
+                  Comunidad
+                </SidebarItem>
             </SidebarItemGroup>
             <SidebarItemGroup>
               <SidebarItem href="#" icon={FaDoorClosed}>
