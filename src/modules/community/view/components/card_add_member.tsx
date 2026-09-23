@@ -1,7 +1,10 @@
+"use client";
 import { Button, Card } from "flowbite-react";
+import { useRouter } from "next/navigation";
 import { FaEdit } from "react-icons/fa";
 
 export default function CardAddMember() {
+  const router = useRouter();
   return (
     <Card>
       <div className="flex justify-between items-center">
@@ -15,10 +18,12 @@ export default function CardAddMember() {
           </p>
         </div>
         <div className="flex space-x-2 items-end">
-          <Button>
+          <Button onClick={() => router.push("/community/members")}>
             <FaEdit />
           </Button>
-          <Button>Invitar miembros</Button>
+          <Button onClick={() => router.push("/community/invite-members")}>
+            Invitar miembros
+          </Button>
         </div>
       </div>
     </Card>

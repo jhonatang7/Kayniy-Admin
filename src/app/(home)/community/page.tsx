@@ -7,6 +7,8 @@ import { Button } from "flowbite-react";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Community } from "@/modules/community/main/types/community.types";
+import { CommunityService } from "@/modules/community/data/services/community_service";
+import Loading from "@/@core/view/components/Loading";
 
 const MOCK_COMMUNITIES: Community[] = [
   {
@@ -42,22 +44,17 @@ const MOCK_COMMUNITIES: Community[] = [
 export default function CommunityPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
-  const filteredCommunities = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
+  const {
+    data: communities,
+    isLoading,
+    error,
+  } = CommunityService.useFilteredCommunities(searchQuery, sortDirection);
 
-    if (!normalizedQuery) {
-      return MOCK_COMMUNITIES;
-    }
-
-    return MOCK_COMMUNITIES.filter((community) => {
-      return (
-        community.name.toLowerCase().includes(normalizedQuery) ||
-        community.description.toLowerCase().includes(normalizedQuery) ||
-        community.id.toLowerCase().includes(normalizedQuery)
-      );
-    });
-  }, [searchQuery]);
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <div className="h-full">
@@ -71,13 +68,17 @@ export default function CommunityPage() {
           <Button
             size="lg"
             className="max-w-xs"
-            onClick={() => router.push("/my-modules/new")}
+            onClick={() => router.push("/community/new")}
           >
             Crear nueva comunidad
           </Button>
         </div>
         <CardAddMember />
-        <CommunityList communities={filteredCommunities} />
+        <CommunityList
+          communities={communities}
+          sortDirection={sortDirection}
+          onSortChange={setSortDirection}
+        />
       </div>
     </div>
   );
