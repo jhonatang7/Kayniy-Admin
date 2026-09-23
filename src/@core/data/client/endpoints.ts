@@ -3,5 +3,8 @@ export const API_ENDPOINTS = {
     MODULE: '/modules',
     LESSON: '/lessons',
     QUIZ: '/quizzes',
-    QUESTION: '/questions'
+    QUESTION: '/questions',
+    COMMUNITY: '/communities',
+    COMMUNITY_MEMBERS: '/community-member',
+    USER: '/users',
 }
