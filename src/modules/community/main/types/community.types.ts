@@ -1,3 +1,5 @@
+import { Role } from "@/modules/auth/main/types/auth.types";
+
 export interface Community {
   id: string;
   name: string;
@@ -22,7 +24,7 @@ export interface CommunityMember {
   firstName: string;
   lastName: string;
   phoneNumber?: string;
-  role: string;
+  role: Role;
 }
 
 export interface CommunityMemberWithCommunity {
