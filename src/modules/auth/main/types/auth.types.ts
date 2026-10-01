@@ -1,9 +1,15 @@
+export interface Role {
+  id: string;
+  name: string;
+}
+
 export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
+  avatarPath?: string | null;
+  role: Role;
 }
 
 export interface AuthResponse {

@@ -24,7 +24,7 @@ export class AuthClient {
   }
 
   static async logout(): Promise<void> {
-    await apiClient.delete(`${API_ENDPOINTS.AUTH}/logout`, {
+    await apiClient.post(`${API_ENDPOINTS.AUTH}/logout`, {
       withCredentials: true,
       headers: addWithoutTokenHeader(),
     });
