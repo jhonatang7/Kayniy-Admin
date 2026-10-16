@@ -1,8 +1,7 @@
-import { Module } from "@/modules/module/main/types/module.types";
 import { LessonService } from "../../data/services/lesson_service";
 import Loading from "@/@core/view/components/Loading";
 import { Badge, List, ListItem } from "flowbite-react";
-import { HiCheckCircle, HiVideoCamera } from "react-icons/hi";
+import { HiVideoCamera } from "react-icons/hi";
 import { GrDocumentPdf } from "react-icons/gr";
 import { LessonType } from "../../main/lesson.types";
 import { useRouter } from "next/navigation";
@@ -32,7 +31,7 @@ export default function LessonList({ moduleId }: LessonListProps) {
       <div className="space-y-4">
         {lessons && lessons.length > 0 ? (
           <List className="divide-y divide-gray-200 dark:divide-gray-700">
-            {lessons.map((lesson, index) => (
+            {[...(lessons ?? [])].sort((first, second) => first.order - second.order).map((lesson) => (
               <ListItem
                 key={lesson.id}
                 icon={
@@ -54,7 +53,7 @@ export default function LessonList({ moduleId }: LessonListProps) {
                     </p>
                   </div>
                   <Badge color="purple" size="sm" className="rounded-2xl ml-4">
-                    {index + 1}
+                    {lesson.order}
                   </Badge>
                 </div>
               </ListItem>

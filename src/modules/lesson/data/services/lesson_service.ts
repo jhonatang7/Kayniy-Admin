@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { LessonClient } from '../client/lesson_client';
-import { CreateLessonRequest, Lesson, UpdateLessonRequest } from '../../main/lesson.types';
+import { CreateLessonRequest, ReorderLessonsRequest, UpdateLessonRequest } from '../../main/lesson.types';
 
 const QUERY_KEYS = {
   LESSONS: ['lessons'],
   LESSON: (id: string) => ['lesson', id],
+  LESSONS_BY_MODULE: (moduleId: string) => ['lessons', 'module', moduleId],
 } as const;
 
 /**
@@ -72,9 +73,21 @@ export const useDeleteLesson = () => {
   });
 };
 
+export const useReorderLessons = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ReorderLessonsRequest) => LessonClient.reorderLessons(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LESSONS_BY_MODULE(variables.moduleId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LESSONS });
+    },
+  });
+};
+
 export const useLessonsByModuleId = (moduleId: string) => {
   return useQuery({
-    queryKey: QUERY_KEYS.LESSONS,
+    queryKey: QUERY_KEYS.LESSONS_BY_MODULE(moduleId),
     queryFn: () => LessonClient.getLessonsByModuleId(moduleId),
     enabled: !!moduleId,
   });
@@ -86,5 +99,6 @@ export const LessonService = {
   useLesson,
   useUpdateLesson,
   useDeleteLesson,
+  useReorderLessons,
   useLessonsByModuleId,
 };

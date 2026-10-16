@@ -7,19 +7,34 @@ import { ModuleService } from "../../data/services/module_service";
 import { ModuleState } from "../../main/types/module.types";
 import Loading from "@/@core/view/components/Loading";
 import { useState } from "react";
+import { AuthService } from "@/modules/auth/data/services/auth_service";
 
 export default function ModuleList() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: listModules, isLoading } = ModuleService.useModules();
+  const { data: user, isLoading: isLoadingUser } = AuthService.useMe();
+  const communityId = user?.community?.id ?? null;
+  const {
+    data: listModules = [],
+    isLoading: isLoadingModules,
+    isError,
+  } = ModuleService.useAllModulesByCommunityId(communityId);
 
-  if (isLoading) {
+  if (isLoadingUser || isLoadingModules) {
     return <Loading/>;
   }
 
+  if (!communityId) {
+    return <p className="p-8 text-red-600">No perteneces a ninguna comunidad.</p>;
+  }
+
+  if (isError) {
+    return <p className="p-8 text-red-600">No fue posible cargar los módulos.</p>;
+  }
+
   // Filtrar módulos por búsqueda (case-insensitive)
-  const filteredModules = listModules?.filter(module => 
+  const filteredModules = listModules.filter(module =>
     searchQuery === "" || 
     module.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     module.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -28,10 +43,6 @@ export default function ModuleList() {
   // Filtrar módulos según su estado
   const verifiedModules = filteredModules.filter(module => module.state === ModuleState.VERIFIED);
   const notVerifiedModules = filteredModules.filter(module => module.state === ModuleState.NOT_VERIFIED);
-
-  console.log("Búsqueda:", searchQuery);
-  console.log("Módulos verificados: ", verifiedModules);
-  console.log("Módulos no verificados: ", notVerifiedModules);
 
   return (
     <div className="flex flex-col p-8 space-y-4">

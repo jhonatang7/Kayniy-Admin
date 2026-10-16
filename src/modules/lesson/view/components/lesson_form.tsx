@@ -23,6 +23,7 @@ export default function LessonForm({ moduleId, lesson }: LessonFormProps) {
   
   const { mutate: createLesson, isPending: isCreating } = LessonService.useCreateLesson();
   const { mutate: updateLesson, isPending: isUpdating } = LessonService.useUpdateLesson();
+  const { data: moduleLessons = [] } = LessonService.useLessonsByModuleId(moduleId);
   
   const isPending = isCreating || isUpdating;
 
@@ -41,9 +42,7 @@ export default function LessonForm({ moduleId, lesson }: LessonFormProps) {
     formState: { errors, isValid },
     reset,
     setValue,
-    watch,
     clearErrors,
-    setError,
   } = useForm<LessonFormValues>({
     resolver: zodResolver(lessonSchema),
     mode: "onChange",
@@ -82,6 +81,7 @@ export default function LessonForm({ moduleId, lesson }: LessonFormProps) {
   }, [selectedType, setValue, clearErrors, isEditing]);
 
   const handleFileSelect = (file: File | null, url: string) => {
+    void url;
     setPdfFile(file);
     if (file) {
       //setValue("urlContent", url);
@@ -121,12 +121,8 @@ export default function LessonForm({ moduleId, lesson }: LessonFormProps) {
             toast.success("Lección actualizada exitosamente");
             router.push(`/my-modules/${moduleId}`);
           },
-          onError: (error: any) => {
+          onError: () => {
             toast.error("Error al actualizar la lección");
-            console.error(
-              "Error al actualizar la lección:",
-              error?.response?.data?.message || error.message
-            );
           },
         }
       );
@@ -139,6 +135,7 @@ export default function LessonForm({ moduleId, lesson }: LessonFormProps) {
           type: data.type,
           urlContent: urlContent,
           duration: data.duration,
+          order: Math.max(0, ...moduleLessons.map((moduleLesson) => moduleLesson.order || 0)) + 1,
           moduleId,
           file: pdfFile || undefined, // Incluir archivo si existe
         },
@@ -150,12 +147,8 @@ export default function LessonForm({ moduleId, lesson }: LessonFormProps) {
             setFileError("");
             router.push(`/my-modules/${moduleId}`);
           },
-          onError: (error: any) => {
+          onError: () => {
             toast.error("Error al crear la lección");
-            console.error(
-              "Error al crear la lección:",
-              error?.response?.data?.message || error.message
-            );
           },
         }
       );

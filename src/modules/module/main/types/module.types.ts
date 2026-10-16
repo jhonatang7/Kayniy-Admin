@@ -2,6 +2,7 @@ import { Lesson } from "@/modules/lesson/main/lesson.types";
 
 export interface Module {
   id: string;
+  communityId?: string;
   title: string;
   description: string;
   state: ModuleState;

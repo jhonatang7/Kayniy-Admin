@@ -108,7 +108,6 @@ export const useDeleteMember = () => {
 
   return useMutation({
     mutationFn: ({
-      communityId,
       memberId,
     }: {
       communityId: string;

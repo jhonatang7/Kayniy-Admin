@@ -1,6 +1,5 @@
-import { HttpClient } from '@/@core/data/client/http_client';
 import { API_ENDPOINTS } from '@/@core/data/client/endpoints';
-import { CreateLessonRequest, Lesson, UpdateLessonRequest } from '../../main/lesson.types';
+import { CreateLessonRequest, Lesson, ReorderLessonsRequest, UpdateLessonRequest } from '../../main/lesson.types';
 import apiClient from '@/@core/data/client/api_client';
 
 export class LessonClient {
@@ -16,6 +15,7 @@ export class LessonClient {
       formData.append('description', data.description);
       formData.append('duration', data.duration.toString());
       formData.append('moduleId', data.moduleId);
+      formData.append('order', data.order.toString());
       formData.append('file', data.file);
       
       const response = await apiClient.post<Lesson>(`${API_ENDPOINTS.LESSON}`, formData, {
@@ -27,7 +27,8 @@ export class LessonClient {
     }
     
     // Si no hay archivo, enviar como JSON
-    const { file, ...jsonData } = data;
+    const jsonData = { ...data };
+    delete jsonData.file;
     const response = await apiClient.post<Lesson>(`${API_ENDPOINTS.LESSON}`, jsonData);
     return response.data;
   }
@@ -70,7 +71,8 @@ export class LessonClient {
     }
     
     // Si no hay archivo, enviar como JSON
-    const { file, ...jsonData } = data;
+    const jsonData = { ...data };
+    delete jsonData.file;
     const response = await apiClient.patch<Lesson>(`${API_ENDPOINTS.LESSON}/${id}`, jsonData);
     return response.data;
   }
@@ -85,6 +87,11 @@ export class LessonClient {
 
   static async getLessonsByModuleId(moduleId: string): Promise<Lesson[]> {
     const response = await apiClient.get<Lesson[]>(`${API_ENDPOINTS.LESSON}/find-by-module/${moduleId}`);
+    return response.data;
+  }
+
+  static async reorderLessons(data: ReorderLessonsRequest): Promise<Lesson[]> {
+    const response = await apiClient.patch<Lesson[]>(`${API_ENDPOINTS.LESSON}/order`, data);
     return response.data;
   }
 }
