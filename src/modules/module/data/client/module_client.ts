@@ -1,4 +1,3 @@
-import { HttpClient } from '@/@core/data/client/http_client';
 import { API_ENDPOINTS } from '@/@core/data/client/endpoints';
 import { CreateModuleRequest, Module, UpdateModuleRequest } from '../../main/types/module.types';
 import apiClient from '@/@core/data/client/api_client';
@@ -17,6 +16,20 @@ export class ModuleClient {
    */
   static async getModules(): Promise<Module[]> {
     const response = await apiClient.get<Module[]>(`${API_ENDPOINTS.MODULE}`);
+    return response.data;
+  }
+
+  static async getModulesByCommunityId(communityId: string): Promise<Module[]> {
+    const response = await apiClient.get<Module[]>(
+      `${API_ENDPOINTS.MODULE}/community/${communityId}`,
+    );
+    return response.data;
+  }
+
+  static async getAllModulesByCommunityId(communityId: string): Promise<Module[]> {
+    const response = await apiClient.get<Module[]>(
+      `${API_ENDPOINTS.MODULE}/community/all/${communityId}`,
+    );
     return response.data;
   }
 

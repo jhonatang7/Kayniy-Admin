@@ -10,8 +10,14 @@ import {
   SidebarItems,
   SidebarLogo,
 } from "flowbite-react";
-import { FaCodeBranch, FaDoorClosed, FaUserShield, FaUserTie } from "react-icons/fa";
+import {
+  FaCodeBranch,
+  FaDoorClosed,
+  FaUserShield,
+  FaUserTie,
+} from "react-icons/fa";
 import { HiChartPie } from "react-icons/hi";
+import { HiCog } from "react-icons/hi2";
 import { TbUsersGroup } from "react-icons/tb";
 import { TfiBlackboard } from "react-icons/tfi";
 
@@ -60,10 +66,10 @@ export function SidebarMenu() {
               )}
               {canAccessTeacherTools && (
                 <>
-                  <SidebarItem href="#" icon={TfiBlackboard}>
+                  <SidebarItem href="/course" icon={TfiBlackboard}>
                     Cursos
                   </SidebarItem>
-                  <SidebarItem href="#" icon={TbUsersGroup}>
+                  <SidebarItem href="/live-class" icon={TbUsersGroup}>
                     Clases en vivo
                   </SidebarItem>
                 </>
@@ -77,6 +83,9 @@ export function SidebarMenu() {
               </SidebarItemGroup>
             )}
             <SidebarItemGroup>
+              <SidebarItem href="/profile" icon={HiCog}>
+                Mi perfil
+              </SidebarItem>
               <SidebarItem
                 href="#"
                 icon={FaDoorClosed}

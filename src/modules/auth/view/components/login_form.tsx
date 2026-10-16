@@ -1,10 +1,11 @@
 import Image from "next/image";
 import { Label, TextInput, Button } from "flowbite-react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginFormValues } from "../schemas/login_schema";
 import { useRouter } from "next/navigation";
-import { HiCheckCircle, HiLockClosed } from "react-icons/hi";
+import { HiLockClosed } from "react-icons/hi";
 import { HiEnvelope } from "react-icons/hi2";
 import { AuthService } from "../../data/services/auth_service";
 
@@ -26,8 +27,7 @@ export default function LoginForm() {
     console.log("Form data:", data);
     login(data, {
       onSuccess: (data) => {
-        console.log("Login successful> ", data);
-        router.push("/dashboard"); // Redirige a la página de inicio después del login
+        router.replace(data.user.isFirstLogin ? "/first-login" : "/dashboard");
       },
       onError: (error) => {
         console.error("Login error:", error);
@@ -84,12 +84,12 @@ export default function LoginForm() {
           )}
         </div>
         <div className="flex justify-end mb-4">
-          <a
-            href="#"
+          <Link
+            href="/forgot-password"
             className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
           >
             ¿Olvidaste tu contraseña?
-          </a>
+          </Link>
         </div>
         <Button
           type="submit"

@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ModuleClient } from '../client/module_client';
-import { CreateModuleRequest, Module, UpdateModuleRequest } from '../../main/types/module.types';
+import { CreateModuleRequest, UpdateModuleRequest } from '../../main/types/module.types';
 
 const QUERY_KEYS = {
   MODULES: ['modules'],
+  MODULES_BY_COMMUNITY: (communityId: string) => ['modules', 'community', communityId],
+  ALL_MODULES_BY_COMMUNITY: (communityId: string) => ['modules', 'community', 'all', communityId],
   MODULE: (id: string) => ['module', id],
 } as const;
 
@@ -15,8 +17,14 @@ export const useCreateModule = () => {
 
   return useMutation({
     mutationFn: (data: CreateModuleRequest) => ModuleClient.createModule(data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.MODULES });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.MODULES_BY_COMMUNITY(variables.communityId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.ALL_MODULES_BY_COMMUNITY(variables.communityId),
+      });
     },
   });
 };
@@ -28,6 +36,26 @@ export const useModules = () => {
   return useQuery({
     queryKey: QUERY_KEYS.MODULES,
     queryFn: () => ModuleClient.getModules(),
+  });
+};
+
+export const useModulesByCommunityId = (communityId: string | null) => {
+  return useQuery({
+    queryKey: communityId
+      ? QUERY_KEYS.MODULES_BY_COMMUNITY(communityId)
+      : ['modules', 'community', null],
+    queryFn: () => ModuleClient.getModulesByCommunityId(communityId as string),
+    enabled: !!communityId,
+  });
+};
+
+export const useAllModulesByCommunityId = (communityId: string | null) => {
+  return useQuery({
+    queryKey: communityId
+      ? QUERY_KEYS.ALL_MODULES_BY_COMMUNITY(communityId)
+      : ['modules', 'community', 'all', null],
+    queryFn: () => ModuleClient.getAllModulesByCommunityId(communityId as string),
+    enabled: !!communityId,
   });
 };
 
@@ -75,6 +103,8 @@ export const useDeleteModule = () => {
 export const ModuleService = {
   useCreateModule,
   useModules,
+  useModulesByCommunityId,
+  useAllModulesByCommunityId,
   useModule,
   useUpdateModule,
   useDeleteModule,

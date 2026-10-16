@@ -5,9 +5,8 @@ import UpdateModuleForm from "@/modules/module/view/components/update_module_for
 import Loading from "@/@core/view/components/Loading";
 import React, { use } from "react";
 import DeleteModule from "@/modules/module/view/components/delete_module";
-import { Breadcrumb, Button } from "flowbite-react";
+import { Button } from "flowbite-react";
 import { RouteBreadCrumb } from "@/@core/view/components/layout/breadcrumb/breadcrumb";
-import AssessmentPage from "@/modules/lesson/view/components/lesson_list";
 import LessonList from "@/modules/lesson/view/components/lesson_list";
 import { useRouter } from "next/navigation";
 
@@ -57,7 +56,11 @@ export default function ModulePage({
                     Agregar Nueva Lección
                   </Button>
 
-                  <Button color="gray" className="ml-4 w-full max-w-xs">
+                  <Button
+                    color="gray"
+                    className="ml-4 w-full max-w-xs"
+                    onClick={() => router.push(`/my-modules/${moduleId}/manage`)}
+                  >
                     Administrar
                   </Button>
                 </div>

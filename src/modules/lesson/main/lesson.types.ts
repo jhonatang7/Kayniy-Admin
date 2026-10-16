@@ -5,6 +5,7 @@ export interface Lesson {
     description: string;
     urlContent: string;
     duration: number;
+    order: number;
     createdAt: string;
     updatedAt: string;
 }
@@ -21,6 +22,7 @@ export interface CreateLessonRequest {
     urlContent: string;
     duration: number;
     moduleId: string;
+    order: number;
     file?: File; // Archivo PDF opcional para documentos
 }
 
@@ -31,4 +33,14 @@ export interface UpdateLessonRequest {
     urlContent?: string;
     duration?: number;
     file?: File; // Archivo PDF opcional para documentos
+}
+
+export interface LessonOrderItem {
+    lessonId: string;
+    order: number;
+}
+
+export interface ReorderLessonsRequest {
+    moduleId: string;
+    lessons: LessonOrderItem[];
 }

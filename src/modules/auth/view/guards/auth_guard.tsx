@@ -89,8 +89,20 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    if (user.isFirstLogin && pathname !== "/first-login") {
+      setIsAuthorized(false);
+      router.replace("/first-login");
+      return;
+    }
+
+    if (!user.isFirstLogin && pathname === "/first-login") {
+      setIsAuthorized(false);
+      router.replace("/dashboard");
+      return;
+    }
+
     setIsAuthorized(true);
-  }, [isChecking, isUserError, isUserLoading, router, user]);
+  }, [isChecking, isUserError, isUserLoading, pathname, router, user]);
 
   if (!isAuthorized) {
     return (

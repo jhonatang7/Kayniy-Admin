@@ -3,10 +3,12 @@
 import { RouteBreadCrumb } from "@/@core/view/components/layout/breadcrumb/breadcrumb";
 import Loading from "@/@core/view/components/Loading";
 import LessonList from "@/modules/lesson/view/components/lesson_list";
+import LessonOrderModal from "@/modules/lesson/view/components/lesson_order_modal";
+import { LessonService } from "@/modules/lesson/data/services/lesson_service";
 import { ModuleService } from "@/modules/module/data/services/module_service";
 import { Button } from "flowbite-react";
 import { useRouter } from "next/navigation";
-import { use } from "react";
+import { use, useState } from "react";
 
 export default function ModuleLayout({
   children,
@@ -18,6 +20,8 @@ export default function ModuleLayout({
   const resolvedParams = use(params);
   const moduleId = resolvedParams.moduleId;
   const { data: module, isLoading } = ModuleService.useModule(moduleId);
+  const { data: lessons = [] } = LessonService.useLessonsByModuleId(moduleId);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const router = useRouter();
 
   if (isLoading) {
@@ -47,7 +51,9 @@ export default function ModuleLayout({
           >
             Agregar una Lección
           </Button>
-          <Button className="max-w-sm w-full">Cambiar orden</Button>
+          <Button className="max-w-sm w-full" onClick={() => setIsOrderModalOpen(true)}>
+            Cambiar orden
+          </Button>
         </div>
 
         {/* Línea divisoria vertical - Solo visible en desktop */}
@@ -56,6 +62,12 @@ export default function ModuleLayout({
         {/* Contenido - Lado Derecho (60%) */}
         <div className="w-full lg:w-3/5 flex flex-col">{children}</div>
       </div>
+      <LessonOrderModal
+        moduleId={moduleId}
+        lessons={lessons}
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+      />
     </div>
   );
 }

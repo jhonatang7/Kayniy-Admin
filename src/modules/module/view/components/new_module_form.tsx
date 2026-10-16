@@ -4,14 +4,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { moduleSchema, ModuleFormValues } from "../schemas/module_schema";
 import { Button, Label, TextInput, Textarea } from "flowbite-react";
-import { HiDocumentText, HiPencilAlt } from "react-icons/hi";
+import { HiPencilAlt } from "react-icons/hi";
 import { RiPuzzleFill } from "react-icons/ri";
 import { ModuleService } from "../../data/services/module_service";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { AuthService } from "@/modules/auth/data/services/auth_service";
 
 export default function NewModuleForm() {
   const router = useRouter();
+  const { data: user, isLoading: isLoadingUser } = AuthService.useMe();
+  const communityId = user?.community?.id;
   const { mutate: createModule, isPending } = ModuleService.useCreateModule();
 
   const {
@@ -25,21 +28,21 @@ export default function NewModuleForm() {
   });
 
   const onSubmit = (data: ModuleFormValues) => {
+    if (!communityId) {
+      toast.error("No perteneces a ninguna comunidad");
+      return;
+    }
+
     createModule(
-      { ...data, communityId: "a4cd8f98-a82a-4b80-b208-ecfef18aedcb" },
+      { ...data, communityId },
       {
         onSuccess: () => {
-          console.log("Módulo creado exitosamente");
           reset();
           toast.success("Módulo creado exitosamente");
           router.push("/my-modules");
         },
-        onError: (error: any) => {
+        onError: () => {
           toast.error("Error al crear el módulo");
-          console.error(
-            "Error al crear el módulo:",
-            error?.response?.data?.message || error.message
-          );
         },
       }
     );
@@ -99,7 +102,7 @@ export default function NewModuleForm() {
           <div className="flex gap-4 mt-6">
             <Button
               type="submit"
-              disabled={!isValid || isPending}
+              disabled={!isValid || isPending || isLoadingUser || !communityId}
               color={isValid && !isPending ? "blue" : "gray"}
               className="flex-1"
             >
