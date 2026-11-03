@@ -20,6 +20,15 @@ const formatDate = (value: string) =>
     timeStyle: "short",
   });
 
+const formatDuration = (duration: number) => {
+  if (duration < 60) return `${duration} min`;
+
+  const hours = Math.floor(duration / 60);
+  const minutes = duration % 60;
+
+  return minutes > 0 ? `${hours} h ${minutes} min` : `${hours} h`;
+};
+
 export default function LiveClassList({ communityId, professorId }: LiveClassListProps) {
   const [search, setSearch] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -102,7 +111,7 @@ export default function LiveClassList({ communityId, professorId }: LiveClassLis
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">{formatDate(liveClass.startedDate)}</TableCell>
-                  <TableCell className="whitespace-nowrap">{liveClass.duration} min</TableCell>
+                  <TableCell className="whitespace-nowrap">{formatDuration(liveClass.duration)}</TableCell>
                   <TableCell className="whitespace-nowrap">{formatDate(liveClass.expiresAt)}</TableCell>
                   <TableCell><Badge color={new Date(liveClass.expiresAt) < new Date() ? "gray" : "success"}>{new Date(liveClass.expiresAt) < new Date() ? "Finalizada" : "Programada"}</Badge></TableCell>
                   <TableCell>
