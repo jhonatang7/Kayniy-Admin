@@ -9,4 +9,5 @@ export const API_ENDPOINTS = {
     COMMUNITY: '/communities',
     COMMUNITY_MEMBERS: '/community-member',
     USER: '/users',
+    ANALYTICS: '/analytics',
 }
