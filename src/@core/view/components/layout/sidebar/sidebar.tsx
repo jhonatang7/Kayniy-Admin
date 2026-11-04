@@ -20,13 +20,18 @@ import { HiChartPie } from "react-icons/hi";
 import { HiCog } from "react-icons/hi2";
 import { TbUsersGroup } from "react-icons/tb";
 import { TfiBlackboard } from "react-icons/tfi";
+import Loading from "@/@core/view/components/Loading";
 
 export function SidebarMenu() {
   const { data, isLoading } = AuthService.useMe();
   const { mutate: logout, isPending: isLoggingOut } = AuthService.useLogout();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <Loading />;
+  }
+
+  if (isLoggingOut) {
+    return <Loading />;
   }
 
   const canManageTeachers = canAccessRole(data?.role, ["admin"]);

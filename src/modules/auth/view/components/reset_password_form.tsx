@@ -53,39 +53,39 @@ export default function ResetPasswordForm() {
   };
 
   return (
-    <Card className="w-full max-w-lg">
+    <Card className="w-full max-w-lg border-gray-700 bg-gray-900 text-white">
       <div className="mb-6 text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-600">
           <HiLockClosed className="h-7 w-7" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-white">
           Restablecer contraseña
         </h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-gray-300">
           Crea una nueva contraseña para recuperar el acceso a tu cuenta.
         </p>
       </div>
 
       {!hasToken ? (
         <div className="space-y-4 text-center">
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-red-300">
             El enlace no contiene un token de recuperación válido.
           </p>
           <Link
             href="/forgot-password"
-            className="block text-sm font-medium text-blue-600 hover:underline"
+            className="block text-sm font-medium text-blue-400 hover:underline"
           >
             Solicitar un nuevo enlace
           </Link>
         </div>
       ) : isSuccess ? (
         <div className="space-y-4 text-center">
-          <p className="text-sm text-green-600">
+          <p className="text-sm text-green-300">
             Tu contraseña fue actualizada correctamente.
           </p>
           <Link
             href="/login"
-            className="block text-sm font-medium text-blue-600 hover:underline"
+            className="block text-sm font-medium text-blue-400 hover:underline"
           >
             Ir al inicio de sesión
           </Link>
@@ -93,7 +93,7 @@ export default function ResetPasswordForm() {
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
-            <Label htmlFor="newPassword">Nueva contraseña</Label>
+            <Label htmlFor="newPassword" className="text-gray-200">Nueva contraseña</Label>
             <TextInput
               id="newPassword"
               type="password"
@@ -101,16 +101,17 @@ export default function ResetPasswordForm() {
               icon={() => <HiLockClosed className="mr-2 h-5 w-5" />}
               {...register("newPassword")}
               color={errors.newPassword ? "failure" : "gray"}
+              className="!border-gray-600 !bg-gray-800 !text-white placeholder:!text-gray-400"
             />
             {errors.newPassword && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm text-red-300">
                 {errors.newPassword.message}
               </p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+            <Label htmlFor="confirmPassword" className="text-gray-200">Confirmar contraseña</Label>
             <TextInput
               id="confirmPassword"
               type="password"
@@ -118,9 +119,10 @@ export default function ResetPasswordForm() {
               icon={() => <HiLockClosed className="mr-2 h-5 w-5" />}
               {...register("confirmPassword")}
               color={errors.confirmPassword ? "failure" : "gray"}
+              className="!border-gray-600 !bg-gray-800 !text-white placeholder:!text-gray-400"
             />
             {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm text-red-300">
                 {errors.confirmPassword.message}
               </p>
             )}

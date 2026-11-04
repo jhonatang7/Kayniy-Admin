@@ -37,19 +37,19 @@ export default function ForgotPasswordForm() {
   };
 
   return (
-    <Card className="w-full max-w-lg">
+    <Card className="w-full max-w-lg border-gray-700 bg-gray-900 text-white">
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-white">
           Recuperar contraseña
         </h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-gray-300">
           Ingresa tu correo y te enviaremos un enlace para restablecerla.
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
-          <Label htmlFor="email">Correo electrónico</Label>
+          <Label htmlFor="email" className="text-gray-200">Correo electrónico</Label>
           <TextInput
             id="email"
             type="email"
@@ -57,9 +57,10 @@ export default function ForgotPasswordForm() {
             icon={() => <HiEnvelope className="mr-2 h-5 w-5" />}
             {...register("email")}
             color={errors.email ? "failure" : "gray"}
+            className="!border-gray-600 !bg-gray-800 !text-white placeholder:!text-gray-400"
           />
           {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+            <p className="mt-1 text-sm text-red-300">{errors.email.message}</p>
           )}
         </div>
 
@@ -70,7 +71,7 @@ export default function ForgotPasswordForm() {
 
       <Link
         href="/login"
-        className="text-center text-sm font-medium text-blue-600 hover:underline"
+        className="text-center text-sm font-medium text-blue-400 hover:underline"
       >
         Volver al inicio de sesión
       </Link>

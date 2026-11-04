@@ -34,7 +34,27 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <TanstackProvider>{children}</TanstackProvider>
-        <Toaster/>
+        <Toaster
+          toastOptions={{
+            style: {
+              background: "#1f2937",
+              color: "#f9fafb",
+              border: "1px solid #4b5563",
+            },
+            success: {
+              iconTheme: {
+                primary: "#4ade80",
+                secondary: "#1f2937",
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: "#f87171",
+                secondary: "#1f2937",
+              },
+            },
+          }}
+        />
       </body>
     </html>
   );
