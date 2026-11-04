@@ -6,6 +6,7 @@ import { TokenClient } from "../../data/client/token_client";
 import { AuthClient } from "../../data/client/auth_client";
 import { AuthService } from "../../data/services/auth_service";
 import { isPlatformRole } from "../../main/authorization";
+import Loading from "@/@core/view/components/Loading";
 
 export const AuthGuard = ({ children }: { children: ReactNode }) => {
   const [isChecking, setIsChecking] = useState(true);
@@ -105,11 +106,7 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
   }, [isChecking, isUserError, isUserLoading, pathname, router, user]);
 
   if (!isAuthorized) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center">
-        <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-blue-600" />
-      </div>
-    );
+    return <Loading />;
   }
 
   return <>{children}</>;

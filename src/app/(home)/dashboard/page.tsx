@@ -8,11 +8,15 @@ import { AnalyticsService } from "@/modules/analytics/data/services/analytics_se
 import { AnalyticsQuery } from "@/modules/analytics/main/types/analytics.types";
 import { AdminDashboard } from "@/modules/analytics/view/components/admin_dashboard";
 import { ProfessorDashboard } from "@/modules/analytics/view/components/professor_dashboard";
+import { IndexContentModal } from "@/modules/ai/view/components/index_content_modal";
+import { ProfessorChatModal } from "@/modules/ai/view/components/professor_chat_modal";
+import Loading from "@/@core/view/components/Loading";
 
 export default function DashboardPage() {
-  const { data: user } = AuthService.useMe();
+  const { data: user, isLoading: isUserLoading } = AuthService.useMe();
   const roleName = getRoleName(user?.role);
   const isAdmin = roleName === "admin" || roleName === "superAdmin";
+  const isSuperAdmin = roleName === "superAdmin";
   const isProfessor = roleName === "teacher" || roleName === "professor";
   const { data: courses = [], isError: coursesError } = AnalyticsService.useAdminCourses(isAdmin);
   const { data: communities = [], isError: communitiesError } = AnalyticsService.useAdminCommunities(isAdmin);
@@ -23,6 +27,8 @@ export default function DashboardPage() {
   const [communityId, setCommunityId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [isIndexModalOpen, setIsIndexModalOpen] = useState(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
   const adminQuery = useMemo<AnalyticsQuery>(
     () => ({
@@ -43,17 +49,43 @@ export default function DashboardPage() {
     [courseId, startDate, endDate],
   );
 
+  if (isUserLoading || !user) {
+    return <Loading />;
+  }
+
   return (
     <div className="min-h-full bg-slate-50 p-4 sm:p-8">
       <RouteBreadCrumb />
       <header className="mb-8">
-        <p className="mb-2 text-sm font-medium uppercase tracking-wider text-blue-600">
-          Panel de administración
-        </p>
-        <h1 className="text-3xl font-bold text-slate-950 sm:text-4xl">Dashboard</h1>
-        <p className="mt-2 text-slate-600">
-          Consulta el rendimiento de las inscripciones y el progreso de aprendizaje.
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-blue-600">
+              Panel de administración
+            </p>
+            <h1 className="text-3xl font-bold text-slate-950 sm:text-4xl">Dashboard</h1>
+            <p className="mt-2 text-slate-600">
+              Consulta el rendimiento de las inscripciones y el progreso de aprendizaje.
+            </p>
+          </div>
+          {isSuperAdmin && (
+            <button
+              type="button"
+              onClick={() => setIsIndexModalOpen(true)}
+              className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              Indexar contenido
+            </button>
+          )}
+          {isProfessor && (
+            <button
+              type="button"
+              onClick={() => setIsChatModalOpen(true)}
+              className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              Consultar asistente de IA
+            </button>
+          )}
+        </div>
       </header>
 
       {isAdmin ? (
@@ -222,6 +254,19 @@ export default function DashboardPage() {
             El dashboard para el rol {roleName || "actual"} estará disponible próximamente.
           </p>
         </section>
+      )}
+      {isSuperAdmin && (
+        <IndexContentModal
+          isOpen={isIndexModalOpen}
+          onClose={() => setIsIndexModalOpen(false)}
+        />
+      )}
+      {isProfessor && (
+        <ProfessorChatModal
+          isOpen={isChatModalOpen}
+          onClose={() => setIsChatModalOpen(false)}
+          communityId={professorCommunityId}
+        />
       )}
     </div>
   );

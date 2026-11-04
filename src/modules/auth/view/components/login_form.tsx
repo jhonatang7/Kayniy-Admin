@@ -8,9 +8,13 @@ import { useRouter } from "next/navigation";
 import { HiLockClosed } from "react-icons/hi";
 import { HiEnvelope } from "react-icons/hi2";
 import { AuthService } from "../../data/services/auth_service";
+import toast from "react-hot-toast";
+import { useState } from "react";
+import Loading from "@/@core/view/components/Loading";
 
 export default function LoginForm() {
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const {
     register,
     handleSubmit,
@@ -23,20 +27,22 @@ export default function LoginForm() {
   const { mutate: login, isPending } = AuthService.useLogin();
 
   const onSubmit = (data: LoginFormValues) => {
-    // Aquí puedes manejar el envío del formulario
-    console.log("Form data:", data);
     login(data, {
       onSuccess: (data) => {
+        setIsRedirecting(true);
+        toast.success("Inicio de sesión exitoso. Cargando tu dashboard...");
         router.replace(data.user.isFirstLogin ? "/first-login" : "/dashboard");
       },
-      onError: (error) => {
-        console.error("Login error:", error);
+      onError: () => {
+        toast.error("No fue posible iniciar sesión. Verifica tus credenciales.");
       },
     });
   };
 
   return (
-    <div className="w-full md:w-1/2 bg-white flex flex-col justify-center items-center p-8">
+    <>
+      {isRedirecting && <Loading />}
+      <div className="flex w-full flex-col items-center justify-center bg-gray-950 p-8 text-white md:w-1/2">
       {/* Logo */}
       <div className="mb-8">
         <Image
@@ -51,34 +57,36 @@ export default function LoginForm() {
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full flex flex-col mx-auto max-w-lg shadow-lg p-8 rounded-lg"
+        className="mx-auto flex w-full max-w-lg flex-col rounded-lg border border-gray-700 bg-gray-900 p-8 shadow-lg"
       >
         <div className="mb-8">
-          <h2 className="text-3xl font-semibold">Inicio de Sesión</h2>
+          <h2 className="text-3xl font-semibold text-white">Inicio de Sesión</h2>
         </div>
         <div className="mb-5 w-full">
-          <Label>Tu Email</Label>
+          <Label className="text-gray-200">Tu Email</Label>
           <TextInput
             {...register("email")}
             placeholder="Ingresa tu email"
             color={errors.email ? "failure" : "gray"}
+            className="!border-gray-600 !bg-gray-800 !text-white placeholder:!text-gray-400"
             icon={() => <HiEnvelope className="mr-2 h-5 w-5" />}
           />
           {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+            <p className="mt-1 text-sm text-red-300">{errors.email.message}</p>
           )}
         </div>
         <div className="mb-5">
-          <Label>Tu contraseña</Label>
+          <Label className="text-gray-200">Tu contraseña</Label>
           <TextInput
             {...register("password")}
             type="password"
             placeholder="*******"
             color={errors.password ? "failure" : "gray"}
+            className="!border-gray-600 !bg-gray-800 !text-white placeholder:!text-gray-400"
             icon={() => <HiLockClosed className="mr-2 h-5 w-5" />}
           />
           {errors.password && (
-            <p className="mt-1 text-sm text-red-600">
+            <p className="mt-1 text-sm text-red-300">
               {errors.password.message}
             </p>
           )}
@@ -86,7 +94,7 @@ export default function LoginForm() {
         <div className="flex justify-end mb-4">
           <Link
             href="/forgot-password"
-            className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+            className="font-medium text-blue-400 hover:text-blue-300 hover:underline"
           >
             ¿Olvidaste tu contraseña?
           </Link>
@@ -99,6 +107,7 @@ export default function LoginForm() {
           {isPending ? "Cargando..." : "Iniciar sesión"}
         </Button>
       </form>
-    </div>
+      </div>
+    </>
   );
 }
