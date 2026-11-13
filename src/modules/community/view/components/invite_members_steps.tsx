@@ -107,7 +107,7 @@ export default function InviteMembersSteps() {
           router.push("/community");
         },
         onError: (error: any) => {
-          toast.error("Error al añadir miembros");
+          toast.error(error.response?.data?.message || "Error al añadir miembros.");
           console.error(
             "Error al añadir miembros:",
             error?.response?.data?.message || error.message,
